@@ -2,8 +2,6 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 
 # Getting Started
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
-
 ## Step 1: Start Metro
 
 First, you will need to run **Metro**, the JavaScript build tool for React Native.
@@ -12,9 +10,11 @@ To start the Metro dev server, run the following command from the root of your R
 
 ```sh
 # Using npm
+npm install
 npm start
 
 # OR using Yarn
+yarn
 yarn start
 ```
 
@@ -31,6 +31,7 @@ npm run android
 # OR using Yarn
 yarn android
 ```
+ open android studio —> click open —> select android folder of the project —>java version - 17, node version - 20.19.4 or newer  —> click on run, emulator will open
 
 ### iOS
 
@@ -47,6 +48,11 @@ Then, and every time you update your native dependencies, run:
 ```sh
 bundle exec pod install
 ```
+or
+
+```sh 
+pod install
+```
 
 For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
 
@@ -57,6 +63,8 @@ npm run ios
 # OR using Yarn
 yarn ios
 ```
+open Xcode —> click open existing project —> select ios/ChatBot.xcworkspace —>click on run button
+
 
 If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
 
@@ -79,19 +87,28 @@ You've successfully run and modified your React Native App. :partying_face:
 
 ### Now what?
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+## How Reanimated 3 was used
 
-# Troubleshooting
+Reanimated 3 was used to handle high-performance animations on the UI thread.
+useSharedValue stores animated values such as translation, scale, or progress.
+useAnimatedStyle maps shared values to styles without triggering React re-renders.
+Gesture callbacks run as worklets, ensuring animations stay smooth even when the JS thread is busy.
+Animations such as snap-back, drag completion, or transitions use helpers like withSpring().
+This approach keeps gesture-driven interactions fluid and responsive.
 
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Gesture handling approach
 
-# Learn More
+Gestures were implemented using react-native-gesture-handler’s declarative Gesture API:
+Gestures like Gesture.Pan() and Gesture.LongPress() are defined declaratively.
+GestureDetector wraps the component and attaches gesture logic.
+Gesture updates directly modify Reanimated shared values (e.g. translateX.value =  withSpring(0)).
+Where needed, gestures are composed using Gesture.Race().
+This setup allows gestures to be processed on the native/UI thread with minimal JS involvement.
 
-To learn more about React Native, take a look at the following resources:
+## State management choice — Zustand
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Zustand was used for global state management due to its simplicity and performance.
+State is accessed directly via hooks without providers or reducers.
+Ideal for app-wide state such as user data, UI preferences, and shared flags.
+Zustand was chosen for lightweight global state management due to its minimal boilerplate and efficient re-rendering. 
+It was used for shared application state, while transient UI and gesture-related state was handled by Reanimated shared values to maintain optimal performance.
